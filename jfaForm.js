@@ -1,17 +1,35 @@
 
 function jfaForm($f){
+	
 	if($f.id != undefined){
-
+		
+		if($f.questions.length < 1){
+			jfaWarn("There are no questions.")
+			return;
+		}
 		this.id = $f.id;
 		this.welcome = $f.welcome;
 		this.questions = $f.questions;
 		this.thanks = $f.thanks;
 		this.print = jfaPrint;
+		this.init = jfaGetHtml;
+
+		this.init();
 	} else {
 		jfaWarn("No id was entered for JfaForm.");
 	}
 
 }	
+
+function jfaGetHtml(){
+	$container = $("#"+ this.id);
+	console.log($container);
+	$container.addClass("jfa-form");
+	if(this.text){
+
+	}
+
+}
 
 function jfaPrint($type = "all", $values = false){
 	$f = this;
