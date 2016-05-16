@@ -30,44 +30,93 @@ function jfaGetHtml(){
 
 
 		//create into function
-		this.questions.forEach(function(ques, index, arr){
-		$item = $('<li>', {class:"item"});
-			$num = $('<div>', {class:"num"});
-			$num.html(index);
-			$question = $('<div>', {class:"question"});
-			$question.html(ques.question);
+		this.questions.forEach(jfaCreateQuestionStructure);
 
-			$item.append($num);
-			$item.append($question);
-		if(ques.text){
-			$ansDiv = $('<div>', {class:"answer"});
-			$input = $('<input>', {type:"text", id:ques.id});
-			$nextBut = $('<span>', {class:"next"});
-			
-			$nextBut.html($f.nextButtonText);
-			
-			$ansDiv.append($input);
-			$ansDiv.append($nextBut)
-			$item.append($ansDiv);
-		}
-			$items.push($item);
+
+		$ulQuestions = $('<ul>', {class:"questions"});
+		$items.forEach(function(item){
+			$ulQuestions.append(item);
 		});
+		$container.html($ulQuestions);
+
+	}
+	
+	function jfaCreateQuestionStructure(ques, index, arr){
+		$item = $('<li>', {class:"item"});
+		$num = $('<div>', {class:"num"});
+		$ansDiv = $('<div>', {class:"answer"});
+		$nextBut = $('<span>', {class:"next"});
+		$question = $('<div>', {class:"question"});
+
+		$num.html(index);
+		$question.html(ques.question);
+		$nextBut.html($f.nextButtonText);
+
+		$item.append($num);
+		$item.append($question);
+
+		if(ques.text){
+
+			$input = $('<input>', {type:"text", id:ques.id});
 
 
-	$ulQuestions = $('<ul>', {class:"questions"});
-	$items.forEach(function(item){
-		$ulQuestions.append(item);
-			console.log($item);
-	});
-	$container.html($ulQuestions);
+			$ansDiv.append($input);
 
-}
+		} else if(ques.select){
+			$ansDiv.addClass("select");
 
-function jfaPrint($type = "all", $values = false){
-	$f = this;
-	switch($type){
-		case "questions":
+			$selectDiv = $('<select>', {name:ques.id, id: ques.id});
+			ques.values.forEach(function(ans, index, arr){
+				$classes = "btn-answer";
+				$classes += (index == 0) ? " selected": "";
+
+				$btnAnswer = $('<button>', {name:ques.id, class: $classes, value:ans});
+				$option = $('<option>', {value:ans});
+
+
+
+				$btnAnswer.html(ans);
+				$option.html(ans);
+
+				$selectDiv.append($option);
+				$ansDiv.append($btnAnswer);
+				$ansDiv.append($selectDiv);
+
+				$btnAnswer.click(function(){
+					$("button[name=" + $(this).attr("name") + "]").removeClass("selected");
+					$(this).addClass("selected");
+					$("select[name=" + $(this).attr("name") + "]").val($(this).val());
+					$curVal = $("select[name=" + $(this).attr("name") + "]").val();
+				});
+				$ansDiv.mousewheel(function(e){
+					e.preventDefault();
+					console.log("1");
+					// -1 right
+					// 1 left
+					
+
+				});
+
+
+			});// /ques.forEach
+
+
+
+		} //end if
+
+		$ansDiv.append($nextBut)
+		$item.append($ansDiv);
+		$items.push($item);
+	}
+	
+	function jfaPrint($type = "all", $values = false){
+		$f = this;
+
+		switch($type){
+			case "questions":
+			
 			var allQuestions = "";
+
 			$f.questions.forEach(function(item, index, arr){
 				var completeQuestion = "";
 				completeQuestion += (index + " : " + item.question);
@@ -82,25 +131,25 @@ function jfaPrint($type = "all", $values = false){
 				allQuestions += "\n" + completeQuestion;
 			});
 			return allQuestions + "\n";
-		break;
+			break;
 
-		case "all":
+			case "all":
 			return this;
-		break;
+			break;
 
-		default:
+			default:
 			if($f[$type] != undefined)
 				return $f[$type];
 			
+		}
+		jfaWarn("The '" + $type + "' property was not found");
 	}
-	jfaWarn("The '" + $type + "' property was not found");
-}
 
-function jfaWarn(string){
+	function jfaWarn(string){
 		
 		console.warn("JfaForm: " + string);
-	return;
-}
+		return;
+	}
 
 
 
@@ -110,11 +159,11 @@ function jfaWarn(string){
 
 
 
-$testForm = {
-	"id":"test",
-	"welcome":"Hey, ready to flow? First let us know you're here!",
-	"nextButtonText" : "next",
-	"questions":[
+	$testForm = {
+		"id":"test",
+		"welcome":"Hey, ready to flow? First let us know you're here!",
+		"nextButtonText" : "next",
+		"questions":[
 		{
 			"id":"name",
 			"question":"What's your name?",
@@ -193,7 +242,7 @@ $testForm = {
 			"values" : ["x-small", "small", "medium", "large", "x-large", "xx-large"],
 			"boolean":false,
 			"required":false,
-			"text":true,
+			"text":false,
 			"email":false,
 			"checkbox":false,
 			"color":false,
