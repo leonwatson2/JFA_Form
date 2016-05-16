@@ -12,43 +12,70 @@ function jfaForm($f){
 		this.questions = $f.questions;
 		this.thanks = $f.thanks;
 		this.nextButtonText = $f.nextButtonText;
+		this.submitButtonText = $f.submitButtonText;
+		this.length = $f.questions.length;
 		this.print = jfaPrint;
 		this.init = jfaGetHtml;
-
+		this.quesElements = [];
+		this.currentQuestion = 0;
+		this.goToQuestion = jfaGoToQuestion;
 		this.init();
 	} else {
 		jfaWarn("No id was entered for JfaForm.");
 	}
 
+
+	
 }	
+
+function jfaGoToQuestion($num){
+	$num = $num != undefined ? $num : this.currentQuestion;
+	$curScroll = $("#" + this.id).scrollTop();
+	$("#" + this.id).animate({
+		scrollTop : $curScroll + this.quesElements[$num].offset().top
+	});
+	
+
+}
+
+
 
 function jfaGetHtml(){
 	$f = this;
-	$container = $("#"+ this.id);
+	$container = $("#"+ $f.id);
+	$submitBtn = $("<button>", {id:$f.id + "-submit", class:"submit", type:"submit", text:$f.submitButtonText})
 	$container.addClass("jfa-form");
 	$items = [];
 
 
-		//create into function
-		this.questions.forEach(jfaCreateQuestionStructure);
+		$f.questions.forEach(jfaCreateQuestionStructure);
 
 
 		$ulQuestions = $('<ul>', {class:"questions"});
 		$items.forEach(function(item){
 			$ulQuestions.append(item);
 		});
+
+		$ulQuestions.append($submitBtn);
 		$container.html($ulQuestions);
+
+
 
 	}
 	
 	function jfaCreateQuestionStructure(ques, index, arr){
-		$item = $('<li>', {class:"item"});
-		$num = $('<div>', {class:"num"});
-		$ansDiv = $('<div>', {class:"answer"});
-		$nextBut = $('<span>', {class:"next"});
-		$question = $('<div>', {class:"question"});
+		$thisQuestion = $f.quesElements[index] = $item = $('<li>', {class:"item"});
+		$thisQuestion.element = {};
 
-		$num.html(index);
+		$thisQuestion.num = index + 1;
+		$num = $('<div>', {class:"num"});
+
+		$thisQuestion.element.ans = $ansDiv = $('<div>', {class:"answer"});
+		$thisQuestion.element.question = $question = $('<div>', {class:"question", required:ques.required});
+		$thisQuestion.element.nextButton = $nextBut = $('<span>', {class:"next", "data-num":$thisQuestion.num});
+
+		
+		$num.html($thisQuestion.num);
 		$question.html(ques.question);
 		$nextBut.html($f.nextButtonText);
 
@@ -66,7 +93,9 @@ function jfaGetHtml(){
 			$ansDiv.addClass("select");
 
 			$selectDiv = $('<select>', {name:ques.id, id: ques.id});
+			
 			ques.values.forEach(function(ans, index, arr){
+				
 				$classes = "btn-answer";
 				$classes += (index == 0) ? " selected": "";
 
@@ -105,6 +134,13 @@ function jfaGetHtml(){
 		} //end if
 
 		$ansDiv.append($nextBut)
+
+		$nextBut.click(function(){
+			if($f.currentQuestion < $f.length - 1)
+				$f.currentQuestion++;
+			$f.goToQuestion();
+		});
+
 		$item.append($ansDiv);
 		$items.push($item);
 	}
@@ -163,12 +199,13 @@ function jfaGetHtml(){
 		"id":"test",
 		"welcome":"Hey, ready to flow? First let us know you're here!",
 		"nextButtonText" : "next",
+		"submitButtonText" : "Send It!",
 		"questions":[
 		{
 			"id":"name",
 			"question":"What's your name?",
 			"boolean":false,
-			"required":false,
+			"required":true,
 			"text":true,
 			"email":false,
 			"checkbox":false,
@@ -241,7 +278,7 @@ function jfaGetHtml(){
 			"question":"What's your t-shirt size?",
 			"values" : ["x-small", "small", "medium", "large", "x-large", "xx-large"],
 			"boolean":false,
-			"required":false,
+			"required":true,
 			"text":false,
 			"email":false,
 			"checkbox":false,
