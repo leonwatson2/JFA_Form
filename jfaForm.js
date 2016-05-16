@@ -5,11 +5,42 @@ function jfaForm($f){
 	this.questions = $f.questions;
 	this.thanks = $f.thanks;
 	this.print = jfaPrint;
+
+}	
+
+function jfaPrint($type = "all", $values = false){
+	$f = this;
+	switch($type){
+		case "questions":
+			var allQuestions = "";
+			$f.questions.forEach(function(item, index, arr){
+				var completeQuestion = "";
+				completeQuestion += (index + " : " + item.question);
+				if($values && item.values != undefined){
+					var t = "\tValues:\n\t\t";
+					item.values.forEach(function(item, index, arr){
+						t += (index + " : " + item + "\t");
+					});
+					
+					completeQuestion += t;
+				}
+				allQuestions += "\n" + completeQuestion;
+			});
+			return allQuestions + "\n";
+		break;
+
+		case "all":
+			return this;
+		break;
+
+		default:
+			if($f[$type] != undefined)
+				return $f[$type];
+			
+	}
+	console.warn("The '" + $type + "' property was not found");
 }
 
-function jfaPrint(){
-	console.log(this);
-}
 
 
 
@@ -47,7 +78,7 @@ $testForm = {
 		},
 		{
 			"id":"is-Student",
-			"question":"Are you a student",
+			"question":"Are you a student?",
 			"values":["yes", "no"],
 			"boolean":true,
 			"required":false,
@@ -96,7 +127,8 @@ $testForm = {
 
 		{
 			"id":"tshirt-size",
-			"question":"",
+			"question":"What's your t-shirt size?",
+			"values" : ["x-small", "small", "medium", "large", "x-large", "xx-large"],
 			"boolean":false,
 			"required":false,
 			"text":true,
