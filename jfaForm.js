@@ -1,6 +1,6 @@
 
 function jfaForm($f){
-	if(this.id != undefined){
+	if($f.id != undefined){
 
 		this.id = $f.id;
 		this.welcome = $f.welcome;
