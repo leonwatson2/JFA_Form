@@ -1,6 +1,9 @@
 
 function jfaForm($f){
-	
+	//fix margin between select questions
+	//add side bar 
+	//add footer
+	//update footer progress
 	if($f.id != undefined){
 
 		if($f.questions.length < 1){
