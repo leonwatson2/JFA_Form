@@ -2,7 +2,7 @@
 function jfaForm($f){
 	
 	if($f.id != undefined){
-		
+
 		if($f.questions.length < 1){
 			jfaWarn("There are no questions.")
 			return;
@@ -11,6 +11,7 @@ function jfaForm($f){
 		this.welcome = $f.welcome;
 		this.questions = $f.questions;
 		this.thanks = $f.thanks;
+		this.nextButtonText = $f.nextButtonText;
 		this.print = jfaPrint;
 		this.init = jfaGetHtml;
 
@@ -22,12 +23,41 @@ function jfaForm($f){
 }	
 
 function jfaGetHtml(){
+	$f = this;
 	$container = $("#"+ this.id);
-	console.log($container);
 	$container.addClass("jfa-form");
-	if(this.text){
+	$items = [];
 
-	}
+		this.questions.forEach(function(ques, index, arr){
+		$item = $('<li>', {class:"item"});
+			$num = $('<div>', {class:"num"});
+			$num.html(index);
+			$question = $('<div>', {class:"question"});
+			$question.html(ques.question);
+
+			$item.append($num);
+			$item.append($question);
+		if(ques.text){
+			$ansDiv = $('<div>', {class:"answer"});
+			$input = $('<input>', {type:"text", id:ques.id});
+			$nextBut = $('<span>', {class:"next"});
+			
+			$nextBut.html($f.nextButtonText);
+			
+			$ansDiv.append($input);
+			$ansDiv.append($nextBut)
+			$item.append($ansDiv);
+		}
+			$items.push($item);
+		});
+
+
+	$ulQuestions = $('<ul>', {class:"questions"});
+	$items.forEach(function(item){
+		$ulQuestions.append(item);
+			console.log($item);
+	});
+	$container.html($ulQuestions);
 
 }
 
@@ -81,6 +111,7 @@ function jfaWarn(string){
 $testForm = {
 	"id":"test",
 	"welcome":"Hey, ready to flow? First let us know you're here!",
+	"nextButtonText" : "next",
 	"questions":[
 		{
 			"id":"name",
