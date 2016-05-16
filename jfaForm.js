@@ -28,6 +28,8 @@ function jfaGetHtml(){
 	$container.addClass("jfa-form");
 	$items = [];
 
+
+		//create into function
 		this.questions.forEach(function(ques, index, arr){
 		$item = $('<li>', {class:"item"});
 			$num = $('<div>', {class:"num"});
