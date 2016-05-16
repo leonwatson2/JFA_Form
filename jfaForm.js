@@ -3,6 +3,8 @@ function jfaForm($f){
 	//fix margin between select questions
 	//add side bar 
 	//add footer
+	//add on change of select
+	//add focus next input
 	//update footer progress
 	if($f.id != undefined){
 
