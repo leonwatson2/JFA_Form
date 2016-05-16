@@ -1,10 +1,15 @@
 
 function jfaForm($f){
-	this.id = $f.id;
-	this.welcome = $f.welcome;
-	this.questions = $f.questions;
-	this.thanks = $f.thanks;
-	this.print = jfaPrint;
+	if(this.id != undefined){
+
+		this.id = $f.id;
+		this.welcome = $f.welcome;
+		this.questions = $f.questions;
+		this.thanks = $f.thanks;
+		this.print = jfaPrint;
+	} else {
+		jfaWarn("No id was entered for JfaForm.");
+	}
 
 }	
 
@@ -38,7 +43,13 @@ function jfaPrint($type = "all", $values = false){
 				return $f[$type];
 			
 	}
-	console.warn("The '" + $type + "' property was not found");
+	jfaWarn("The '" + $type + "' property was not found");
+}
+
+function jfaWarn(string){
+		
+		console.warn("JfaForm: " + string);
+	return;
 }
 
 
