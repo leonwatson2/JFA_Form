@@ -70,5 +70,13 @@ It creates elements from a javascript object that looks as follows.
 ```
 
 This is passed to the jfaFrom "constructor" for each part of the jfa_form.
-Then calling init() on that function puts the questions with numbers in the 
+Then calling init() on that object puts the questions with numbers in the 
 element with the id ``"test"`` in this case.
+
+
+#### Making a new JFA_Form and putting on the dom.
+```	
+var r = new jfaForm($testForm);	
+r.init();
+```
+
