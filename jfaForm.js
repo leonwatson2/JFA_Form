@@ -146,6 +146,12 @@ function jfaSetHtml(){
 		$items.push($thisQuestion);
 	}//jfaCreateQuestionStructure()
 	
+	function updateProgressBar(){
+		$numDone = $(".next.ready").length;
+		$percentDone = 100*$numDone / $f.length;
+		console.log($percentDone);
+		$f.progressBarDiv.css('width',$percentDone + "%");
+	}
 
 	function jfaGetFooterHtml(){
 		$footDiv = $('<div>', {class:"footer"});
@@ -156,7 +162,7 @@ function jfaSetHtml(){
 			$totalNumSpan = $('<span>', {id:"total", text:$f.length});
 		//progressbar
 			$barDiv = $('<div>', {class:"bar"});
-			$progressBarDiv = $('<div>', {class:"progress"});
+			$f.progressBarDiv = $progressBarDiv = $('<div>', {class:"progress"});
 
 		//nav buttons
 		$navButtonsDiv = $('<div>', {id:"nav-buttons", class:"pull-right"});
@@ -194,6 +200,7 @@ function jfaSetHtml(){
 		if($f.currentQuestion < $f.length - 1)
 			$f.currentQuestion++;
 		$f.goToQuestion(parseInt($(this).attr('data-num')));
+		updateProgressBar();
 	}
 
 	function jfaSelectButtonClickEvent(){
@@ -206,6 +213,7 @@ function jfaSetHtml(){
 
 		$(".next[data-name="+ name + "]").addClass("ready");
 
+		updateProgressBar();
 	}
 
 	function jfaNavButtonClickEvent(event){
@@ -215,6 +223,8 @@ function jfaSetHtml(){
 			$f.goToQuestion(--$f.currentQuestion);
 		else if(direction == "down" && $f.currentQuestion != $f.length - 1)
 			$f.goToQuestion(++$f.currentQuestion);
+		
+		updateProgressBar();
 	}
 
 	//keyUpEvents
@@ -230,6 +240,7 @@ function jfaSetHtml(){
 			$nextBut = $(".next[data-name=" + id + "]").removeClass("ready");
 
 		}
+		updateProgressBar();
 	}
 
 	//onChangeEvents
