@@ -56,7 +56,7 @@ function jfaSetHtml(){
 	$container = $("#"+ $f.id);
 	$submitBtn = $("<button>", {id:$f.id + "-submit", class:"submit", type:"submit", text:$f.submitButtonText});
 	$footer = jfaGetFooterHtml();
-	$container.addClass("jfa-form");
+	$container.addClass("jfa-form open");
 	$items = [];
 
 
@@ -94,7 +94,7 @@ function jfaSetHtml(){
 
 		$thisQuestion.element.nextButton 
 			= $nextBut 
-			= $('<span>', {class:"next", "data-num":$thisQuestion.num})
+			= $('<span>', {class:"next", 'data-num':$thisQuestion.num, 'data-name':ques.id})
 				.html($f.nextButtonText)
 				.click(jfaNextButtonClickEvent);
 
@@ -104,7 +104,7 @@ function jfaSetHtml(){
 
 		if(ques.text){
 
-			$input = $('<input>', {type:"text", id:ques.id});
+			$input = $('<input>', {type:"text", id:ques.id}).keyup(jfaOnKeyUpEvent);
 
 
 			$ansDiv.append($input);
@@ -113,12 +113,11 @@ function jfaSetHtml(){
 
 			$ansDiv.addClass("select");
 
-			$selectDiv = $('<select>', {name:ques.id, id: ques.id});
+			$selectDiv = $('<select>', {name:ques.id, id: ques.id}).change(jfaOnChangeEvent);
 			
 			ques.values.forEach(function(ans, index, arr){
 				
 				$classes = "btn-answer";
-				$classes += (index == 0) ? " selected": "";
 
 				$btnAnswer = $('<button>', {name:ques.id, class: $classes, value:ans})
 									.click(jfaSelectButtonClickEvent);
@@ -198,10 +197,15 @@ function jfaSetHtml(){
 	}
 
 	function jfaSelectButtonClickEvent(){
-		$("button[name=" + $(this).attr("name") + "]").removeClass("selected");
+		var name = $(this).attr("name");
+		$("button[name=" + name + "]").removeClass("selected");
 		$(this).addClass("selected");
-		$("select[name=" + $(this).attr("name") + "]").val($(this).val());
-		$curVal = $("select[name=" + $(this).attr("name") + "]").val();
+		$("select#" + name).val($(this).val());
+		$curVal = $("select[name=" + name + "]").val();
+		$("select#" + $(this).attr("name")).val();
+
+		$(".next[data-name="+ name + "]").addClass("ready");
+
 	}
 
 	function jfaNavButtonClickEvent(event){
@@ -213,6 +217,25 @@ function jfaSetHtml(){
 			$f.goToQuestion(++$f.currentQuestion);
 	}
 
+	//keyUpEvents
+	function jfaOnKeyUpEvent(){
+		var val = this.value;
+		var id = this.attributes.id.value;
+
+		console.log($nextBut);
+		if(val.length > 2){
+			$nextBut = $(".next[data-name=" + id + "]").addClass("ready");
+			
+		} else {
+			$nextBut = $(".next[data-name=" + id + "]").removeClass("ready");
+
+		}
+	}
+
+	//onChangeEvents
+	function jfaOnChangeEvent(){
+		console.log("fwe")
+	}
 
 
 
