@@ -20,7 +20,7 @@ function jfaForm($f){
 		this.submitButtonText = $f.submitButtonText;
 		this.length = $f.questions.length;
 		this.print = jfaPrint;
-		this.init = jfaGetHtml;
+		this.init = jfaSetHtml;
 		this.quesElements = [];
 		this.currentQuestion = 0;
 		this.goToQuestion = jfaGoToQuestion;
@@ -33,22 +33,29 @@ function jfaForm($f){
 	
 }	
 
-function jfaGoToQuestion($num){
-	$num = $num != undefined ? $num : this.currentQuestion;
-	$curScroll = $("#" + this.id).scrollTop();
-	$("#" + this.id).animate({
-		scrollTop : $curScroll + this.quesElements[$num].offset().top
-	});
+//visual
+function jfaGoToQuestion(num){
+	num = num != undefined ? num : this.currentQuestion;
+	 	
+	
+	if(num != this.length){
+
+		$curScroll = $("#" + this.id).scrollTop();
+		$("#" + this.id).animate({
+			scrollTop : $curScroll + this.quesElements[num].offset().top
+		});
+	}
 	
 
 }
 
 
 
-function jfaGetHtml(){
+function jfaSetHtml(){
 	$f = this;
 	$container = $("#"+ $f.id);
-	$submitBtn = $("<button>", {id:$f.id + "-submit", class:"submit", type:"submit", text:$f.submitButtonText})
+	$submitBtn = $("<button>", {id:$f.id + "-submit", class:"submit", type:"submit", text:$f.submitButtonText});
+	$footer = jfaGetFooterHtml();
 	$container.addClass("jfa-form");
 	$items = [];
 
@@ -62,6 +69,9 @@ function jfaGetHtml(){
 		});
 
 		$ulQuestions.append($submitBtn);
+		$ulQuestions.append($footer);
+
+
 		$container.html($ulQuestions);
 
 
@@ -69,23 +79,28 @@ function jfaGetHtml(){
 	}
 	
 	function jfaCreateQuestionStructure(ques, index, arr){
-		$thisQuestion = $f.quesElements[index] = $item = $('<li>', {class:"item"});
+		$thisQuestion = $f.quesElements[index] = $('<li>', {class:"item"});
 		$thisQuestion.element = {};
 
 		$thisQuestion.num = index + 1;
-		$num = $('<div>', {class:"num"});
+		$num = $('<div>', {class:"num"})
+				.html($thisQuestion.num);
 
 		$thisQuestion.element.ans = $ansDiv = $('<div>', {class:"answer"});
-		$thisQuestion.element.question = $question = $('<div>', {class:"question", required:ques.required});
-		$thisQuestion.element.nextButton = $nextBut = $('<span>', {class:"next", "data-num":$thisQuestion.num});
+		$thisQuestion.element.question 
+			= $question 
+			= $('<div>', {class:"question", required:ques.required})
+				.html(ques.question);
+
+		$thisQuestion.element.nextButton 
+			= $nextBut 
+			= $('<span>', {class:"next", "data-num":$thisQuestion.num})
+				.html($f.nextButtonText)
+				.click(jfaNextButtonClickEvent);
 
 		
-		$num.html($thisQuestion.num);
-		$question.html(ques.question);
-		$nextBut.html($f.nextButtonText);
+		$thisQuestion.appendElements($num, $question);
 
-		$item.append($num);
-		$item.append($question);
 
 		if(ques.text){
 
@@ -95,6 +110,7 @@ function jfaGetHtml(){
 			$ansDiv.append($input);
 
 		} else if(ques.select){
+
 			$ansDiv.addClass("select");
 
 			$selectDiv = $('<select>', {name:ques.id, id: ques.id});
@@ -104,7 +120,8 @@ function jfaGetHtml(){
 				$classes = "btn-answer";
 				$classes += (index == 0) ? " selected": "";
 
-				$btnAnswer = $('<button>', {name:ques.id, class: $classes, value:ans});
+				$btnAnswer = $('<button>', {name:ques.id, class: $classes, value:ans})
+									.click(jfaSelectButtonClickEvent);
 				$option = $('<option>', {value:ans});
 
 
@@ -116,21 +133,6 @@ function jfaGetHtml(){
 				$ansDiv.append($btnAnswer);
 				$ansDiv.append($selectDiv);
 
-				$btnAnswer.click(function(){
-					$("button[name=" + $(this).attr("name") + "]").removeClass("selected");
-					$(this).addClass("selected");
-					$("select[name=" + $(this).attr("name") + "]").val($(this).val());
-					$curVal = $("select[name=" + $(this).attr("name") + "]").val();
-				});
-				$ansDiv.mousewheel(function(e){
-					e.preventDefault();
-					console.log("1");
-					// -1 right
-					// 1 left
-					
-
-				});
-
 
 			});// /ques.forEach
 
@@ -140,20 +142,109 @@ function jfaGetHtml(){
 
 		$ansDiv.append($nextBut)
 
-		$nextBut.click(function(){
-			if($f.currentQuestion < $f.length - 1)
-				$f.currentQuestion++;
-			$f.goToQuestion();
-		});
 
-		$item.append($ansDiv);
-		$items.push($item);
-	}
+		$thisQuestion.append($ansDiv);
+		$items.push($thisQuestion);
+	}//jfaCreateQuestionStructure()
 	
-	function jfaPrint($type = "all", $values = false){
+
+	function jfaGetFooterHtml(){
+		$footDiv = $('<div>', {class:"footer"});
+		//progress
+		$progressDiv = $('<div>', {id:"progress"});
+			$labelDiv = $('<div>', {class:"label"});
+			$leftNumSpan = $('<span>', {id:"left", text:"1"});
+			$totalNumSpan = $('<span>', {id:"total", text:$f.length});
+		//progressbar
+			$barDiv = $('<div>', {class:"bar"});
+			$progressBarDiv = $('<div>', {class:"progress"});
+
+		//nav buttons
+		$navButtonsDiv = $('<div>', {id:"nav-buttons", class:"pull-right"});
+			$navUpDiv = $('<div>', {class:"nav-up nav"})
+							.click("up", jfaNavButtonClickEvent);
+			$navDownDiv = $('<div>', {class:"nav-down nav"})
+							.click("down", jfaNavButtonClickEvent);
+
+			$iconUp = "jfa-chevron-up";
+			$iconDown = "jfa-chevron-down";
+			$iconUpElement = $('<i>', {class:$iconUp});
+			$iconDownElement = $('<i>', {class:$iconDown});
+
+
+
+		$navUpDiv.append($iconUpElement);
+		$navDownDiv.append($iconDownElement);
+
+		$navButtonsDiv.appendElements($navDownDiv, $navUpDiv);
+
+		$betweenText = " of ";
+		$finishedText = " done.";
+
+		$barDiv.appendElements($progressBarDiv);
+		$progressDiv.appendElements($leftNumSpan, $betweenText , $totalNumSpan, $finishedText, $barDiv);
+
+		$footDiv.appendElements($progressDiv, $navButtonsDiv);
+
+		return $footDiv;
+
+	}
+
+	//clickEvents
+	function jfaNextButtonClickEvent(){
+		if($f.currentQuestion < $f.length - 1)
+			$f.currentQuestion++;
+		$f.goToQuestion(parseInt($(this).attr('data-num')));
+	}
+
+	function jfaSelectButtonClickEvent(){
+		$("button[name=" + $(this).attr("name") + "]").removeClass("selected");
+		$(this).addClass("selected");
+		$("select[name=" + $(this).attr("name") + "]").val($(this).val());
+		$curVal = $("select[name=" + $(this).attr("name") + "]").val();
+	}
+
+	function jfaNavButtonClickEvent(event){
+		var direction = event.data;
+		console.log(direction);
+		if(direction == "up" && $f.currentQuestion != 0)
+			$f.goToQuestion(--$f.currentQuestion);
+		else if(direction == "down" && $f.currentQuestion != $f.length - 1)
+			$f.goToQuestion(++$f.currentQuestion);
+	}
+
+
+
+
+
+	(function addCustomJqueryElementFunctions(){
+
+		$.fn.appendElements = appendElements;
+
+	})();
+
+	function removeCustomJqueryElementFunctions(){
+		$.fn.appendElements = null;
+
+	}
+
+	//Utlities
+	function appendElements(){
+
+		for (var z = 0; z < arguments.length; z++) {
+			this.append(arguments[z]);
+		};
+	}
+
+
+	//Debug Utlities
+	function jfaPrint(type, values){
+		type = type || "all";
+		values = values = false;
+
 		$f = this;
 
-		switch($type){
+		switch(type){
 			case "questions":
 			
 			var allQuestions = "";
@@ -161,7 +252,7 @@ function jfaGetHtml(){
 			$f.questions.forEach(function(item, index, arr){
 				var completeQuestion = "";
 				completeQuestion += (index + " : " + item.question);
-				if($values && item.values != undefined){
+				if(values && item.values != undefined){
 					var t = "\tValues:\n\t\t";
 					item.values.forEach(function(item, index, arr){
 						t += (index + " : " + item + "\t");
@@ -179,11 +270,11 @@ function jfaGetHtml(){
 			break;
 
 			default:
-			if($f[$type] != undefined)
-				return $f[$type];
+			if($f[type] != undefined)
+				return $f[type];
 			
 		}
-		jfaWarn("The '" + $type + "' property was not found");
+		jfaWarn("The '" + type + "' property was not found");
 	}
 
 	function jfaWarn(string){
